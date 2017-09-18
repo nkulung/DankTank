@@ -1,7 +1,7 @@
 # DankTank
 Dank Tank Java Game
 
-This game requires the Processing library to run, you can install it here:\n
+This game requires the Processing library to run, you can install it here:
 https://processing.org/download/
 
 Reference Guide:
