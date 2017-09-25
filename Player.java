@@ -4,13 +4,13 @@ public class Player
 {
 	// Constants
 	
-	private int health;		// player health
-	private int currency;	// player currency
-	private int x;			// player x coordinate
-	private int y;			// player y coordinate
-	private int velocity;	// player speed
-	private boolean up;		// player orientation
-	private int[] location = new int[2];	// coordinates for block player is inside
+	private int health;						// player health
+	private int currency;					// player currency
+	private int x;							// player x coordinate
+	private int y;							// player y coordinate
+	private int velocity;					// player speed
+	private boolean up;						// player orientation
+	private int[] location = new int[2];	// coordinates for unit(block) player is inside
 	
 	/**
 	 * Default constructor given no parameters
@@ -23,8 +23,8 @@ public class Player
 		y = 600;
 		velocity = 15;
 		up = true;
-		location[0] = (x/100);
-		location[1] = (y/100);
+		location[0] = (x);
+		location[1] = (y);
 	}
 	
 	/**
