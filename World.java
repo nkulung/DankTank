@@ -1,4 +1,7 @@
 package main;
+
+import java.awt.Color;
+
 /**
  * This class represents the world in the DankTank game
  * @author 
@@ -7,6 +10,7 @@ package main;
 public class World 
 {
 	private static final int DIMENSION = 50;
+	private static final int UNIT_SIZE = 100;
 	
 	Unit[][] map;
 	private int[] playerLoc;
@@ -30,7 +34,7 @@ public class World
 		{
 			for(int j = 0; j < DIMENSION; j++)
 			{
-				map[i][j] = new Unit(i*100, j*100);
+				map[i][j] = new Unit(i*UNIT_SIZE, j*UNIT_SIZE);
 			}
 		}
 	}
@@ -87,23 +91,25 @@ public class World
 	}
 	
 	
+//=================================================================================
+//									Unit Class
+//=================================================================================
 	/**
 	 * This class represents a single unit on the map
-	 * @author 
-	 *
 	 */
 	public class Unit
 	{
-		private int x;	// unit x coordinate (top left)
-		private int y;	// unit y coordinate (top left)
+		private int x;				// unit x coordinate (top left)
+		private int y;				// unit y coordinate (top left)
+		private Color unitColor;	// unit color
 		
 		/**
 		 * Default constructor for unit class
 		 */
 		public Unit()
 		{
-			x = 60;
-			y = 70;
+			x = 0;
+			y = 0;
 		}
 		
 		/**

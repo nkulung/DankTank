@@ -1,11 +1,20 @@
 package main;
-
+/**
+ * Main class for Dank Tank game
+ * CSC 305: Software Engineering Fall '17
+ * @author Nate Larson   (fullscreen 3200 x 1800)
+ * @author Gabe Le
+ * @author Nick Kulungian
+ * @author Ronil Soto
+ * @author Kevin Andrade
+ */
+import java.awt.Color;
 import processing.core.PApplet;
+import processing.core.PFont;
+import processing.core.PImage;
 
 public class ProcessingMain extends PApplet
 {
-	private static final int WINDOW_WIDTH = 2000;	// initializing the window width
-	private static final int WINDOW_HEIGHT = 1200;	// initializing the window height
 	private static final int FPS = 60;				// initializing the frames per second
 	
 	private static final int S_KEY = 115;			// initializing the "S" key code
@@ -13,15 +22,63 @@ public class ProcessingMain extends PApplet
 	private static final int W_KEY = 119;			// initializing the "W" key code
 	private static final int A_KEY = 97;			// initializing the "A" key code
 	
-	private static final int SCREEN_EDGE_TOP = 400;		// top edge coordinate
-	private static final int SCREEN_EDGE_BOTTOM = 800;	// bottom edge coordinate
-	private static final int SCREEN_EDGE_LEFT = 400;	// left edge coordinate
-	private static final int SCREEN_EDGE_RIGHT = 1000;	// right edge coordinate
+	// Player window variables
+	private int SCREEN_EDGE_TOP;		// top edge coordinate
+	private int SCREEN_EDGE_BOTTOM;		// bottom edge coordinate
+	private int SCREEN_EDGE_LEFT;		// left edge coordinate
+	private int SCREEN_EDGE_RIGHT;		// right edge coordinate
 	
-	private boolean menu;							// declaring the "menu open" value
+	private PFont FLOAT_FONT;
 	
-	Player user;									// declaring player tank object
-	World map;										// declaring world object
+	// User Interface variables
+	private int BORDER_WIDTH;						// variable to represent width of borders
+	private int UI_WIDTH;
+	private int MENU_WALL;							// menu border between player window and menu
+	
+	// UI column and row coordinates
+	private int UI_column0,
+				UI_column1,
+				UI_column2;
+	private int UI_row0,
+				UI_row1,
+				UI_row2,
+				UI_row3,
+				UI_row4,
+				UI_row5,
+				UI_row6,
+				UI_row7,
+				UI_row8;
+	
+	private float angle;			// angle of the tank barrel, based on mouse location
+	
+	PImage currencyIcon;
+	PImage standardAmmoIcon;
+	PImage burnAmmoIcon;
+	PImage grassBlock;
+	PImage heart;
+	PImage speedIcon;
+	PImage armorIcon;
+	PImage damageIcon;
+	
+	
+	// Button instantiation
+	private Button menuButton;
+	private Button backButton;
+	private Button exitButton;
+	private Button helpButton;
+	private Button blackButton;
+	private Button redButton;
+	private Button greenButton;
+	private Button blueButton;
+	
+	
+	
+	private boolean menu;							// declaring the "main menu open" value
+	private boolean help;							// declaring the "help menu open" value
+	private boolean data;							// declaring the "data visible" value
+	
+	private Player user;									// declaring player tank object
+	private World map;										// declaring world object
 
 	public static void main(String[] args) 
 	{
@@ -34,7 +91,8 @@ public class ProcessingMain extends PApplet
 	 */
 	public void settings()
 	{
-		size(WINDOW_WIDTH, WINDOW_HEIGHT);			// sets the window size to parameters
+		//size(1200, 800);			// sets the window size to parameters
+		fullScreen();
 	}
 	
 	/**
@@ -44,9 +102,26 @@ public class ProcessingMain extends PApplet
 	public void setup()
 	{
 		frameRate(FPS);								// sets the desired frames per second (default is 60)
+		
+		FLOAT_FONT = createFont("BOLD", 40);
+		
+		currencyIcon = loadImage("coins.png");
+		standardAmmoIcon = loadImage("standardAmmo.png");
+		burnAmmoIcon = loadImage("burn.png");
+		grassBlock = loadImage("grassBlock.png");
+		
+		speedIcon = loadImage("turboIcon.png");
+		armorIcon = loadImage("shield_blue.png");
+		
+		
 		user = new Player();						// creates new Player 
 		map = new World(user.getLocation());		// creates a new World with the player location as the parameter
 		menu = false;								// menu is closed at program start
+		help = false;
+		data = false;
+		
+		scaleFrame();								// create dimensions based on monitor width & height
+		createButtons();							// instantiate all button objects
 	}
 	
 	/**
@@ -60,13 +135,25 @@ public class ProcessingMain extends PApplet
 		drawPlayer();								// then draws the player over the world
 		checkMouse();								// checks mouse location and acts accordingly
 		drawUI();									// then draws the User Interface to the window
-		if(menu == false)
+		if(!help)
 		{
-			drawData();						
+			if(!menu)
+			{
+				drawData();
+			}
+			else if(menu)
+			{
+				drawMenu();
+			}
 		}
-		else if(menu == true)
+		else if(help)
 		{
-			drawMenu();
+			drawHelpMenu();
+		}
+		
+		if(data)
+		{
+			drawPerformance();
 		}
 		fill(0);
 	}
@@ -76,24 +163,41 @@ public class ProcessingMain extends PApplet
 	 */
 	void drawPlayer()
 	{
-	  fill(0);
-	  
-	  if(user.getOrientation() == false)
+	  pushStyle();
+	  fill(user.getColor().getRed(), user.getColor().getGreen(), user.getColor().getBlue());
+	  rectMode(CENTER);
+	  rect(user.getX(), user.getY(), user.getSize(), user.getSize());
+	  fill(160, 160, 160);
+	  if(user.isVertical() == false)
 	  {
-	    rect(user.getX(), user.getY(), 120, 80);
-	    fill(160, 160, 160);
-	    rect(user.getX() - 5, user.getY() - 5, 130, 20);
-	    rect(user.getX() - 5, user.getY() + 80, 130, 20);
-	    ellipse(user.getX() + 60, user.getY() + 45, 40, 40);
+	    rect(user.getX(), user.getY() - (user.getSize()/2), user.getSize() + 20, 20);
+	    rect(user.getX(), user.getY() + (user.getSize()/2), user.getSize() + 20, 20);
+	    int x = user.getX() - (user.getSize()/2) - 10;
+	    int y = user.getY() - (user.getSize()/2) - 10;
+	    for(int i = 0; i <= (user.getSize() + 20)/20; i++)
+	    {
+	    	line(x, y, x, y + 20);
+	    	line(x, y + user.getSize(), x, y + user.getSize() + 20);
+	    	x += 20;
+	    }
 	  }
 	  else
-	  {
-	    rect(user.getX(), user.getY(), 80, 120); 
-	    fill(160, 160, 160);
-	    rect(user.getX() - 5, user.getY() - 5, 20, 130);
-	    rect(user.getX() + 80, user.getY() -5, 20, 130);
-	    ellipse(user.getX() + 45, user.getY() + 60, 40, 40);
+	  { 
+	    rect(user.getX() - (user.getSize()/2), user.getY(), 20, user.getSize() + 20);
+	    rect(user.getX() + (user.getSize()/2), user.getY(), 20, user.getSize() + 20);
+	    int x = user.getX() - (user.getSize()/2) - 10;
+	    int y = user.getY() - (user.getSize()/2) - 10;
+	    for(int i = 0; i <= (user.getSize() + 20)/20; i++)
+	    {
+	    	line(x, y, x + 20, y);
+	    	line(x + user.getSize(), y, x + user.getSize() + 20, y);
+	    	y += 20;
+	    }
 	  }
+	  ellipse(user.getX(), user.getY(), user.getSize()/2, user.getSize()/2);
+	  calculateBarrelAngle();
+	  //ellipse(user.getX(), user.getY(), radius, radius);
+	  popStyle();
 	  
 	}
 	
@@ -102,17 +206,10 @@ public class ProcessingMain extends PApplet
 	 */
 	void checkMouse()
 	{
-		if(mouseX < 1400)
+		if(mouseX < MENU_WALL)
 		{
 			cursor(CROSS);
-			if(user.getOrientation() == false)
-			{
-				line(user.getX() + 60, user.getY() + 40, mouseX, mouseY);
-			}
-			else
-			{
-				line(user.getX() + 40, user.getY()+ 60, mouseX, mouseY);
-			}
+			line(user.getX(), user.getY(), mouseX, mouseY);
 		}
 		else
 		{
@@ -125,34 +222,33 @@ public class ProcessingMain extends PApplet
 	 */
 	void drawUI()
 	{
-		final int LEFT_WALL = 1400;
-	  fill(112, 109, 99);
-	  rect(LEFT_WALL, 0, 600, WINDOW_HEIGHT);
+		fill(112, 109, 99);						// fill with grey and draw UI background
+	    rect(MENU_WALL, 0, UI_WIDTH, height);
 	  
-	  fill(125, 93, 6);
-	  noStroke();
-	  //rect(0, 0, 1400, 20);
-	  //rect(0, 0, 20, 1200);
-	  //rect(0, 1180, 1400, 20);
-	  rect(LEFT_WALL, 0, 20, WINDOW_HEIGHT);
-	  rect(LEFT_WALL, 0, 600, 20);
-	  rect(LEFT_WALL, 1180, 600, 20);
-	  rect(LEFT_WALL + 580, 0, 20, 1200);
-	  rect(LEFT_WALL + 40, 50, 520, 520);
+	    fill(125, 93, 6);						// fill with brown and draw borders
+	    noStroke();
+	    rect(MENU_WALL, 0, BORDER_WIDTH, height);			// left menu border
+	    rect(MENU_WALL, 0, UI_WIDTH, BORDER_WIDTH);		// top menu border
+	    rect(0, height - BORDER_WIDTH, width, BORDER_WIDTH);		// entire bottom window border
+	    rect(width - BORDER_WIDTH, 0, BORDER_WIDTH, height);		// right menu border
+	    
+	    int mapWidth = (width - MENU_WALL) - 120;
+	    rect(MENU_WALL + 70, 50, mapWidth, mapWidth);
 	  
-	  stroke(0);
-	  for(int i = 0; i < map.getDimension(); i++)			// for loops to run through and draw the minimap with player location
-	  {
-		  for(int j = 0; j < map.getDimension(); j++)
-		  {
-			  fill(255, 255, 255);
-			  if(i == map.getPlayerLocation()[0] && j == map.getPlayerLocation()[1])
-			  {
-				  fill(0, 255, 0);
-			  }
-			  rect(1450+(i*10), 60+(j*10), 10, 10);
-		  }
-	  }
+	    stroke(0);
+	    int mapSize = (mapWidth - BORDER_WIDTH) / 50;
+	    for(int i = 0; i < map.getDimension(); i++)			// for loops to run through and draw the minimap with player location
+	    {
+		    for(int j = 0; j < map.getDimension(); j++)
+		    {
+			    fill(255, 255, 255);
+			    if(i == map.getPlayerLocation()[0] && j == map.getPlayerLocation()[1])
+			    {
+				    fill(0, 255, 0);
+			    }
+			    rect((MENU_WALL + 80) + (i*mapSize), 60 + (j*mapSize), mapSize, mapSize);
+		    }
+	    }
 
 	}
 	
@@ -160,25 +256,34 @@ public class ProcessingMain extends PApplet
 	 * Method to draw the user data
 	 */
 	void drawData()
-	{
+	{	
 		pushStyle();					// saves the current style
 		stroke(0);
 		
+		rectMode(CENTER);
 		fill(255, 0, 0);				// draws the red health bar 
-		rect(1500, 600, 400, 50, 20);
+		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20);
 		
 		fill(0, 255, 0);				// draws the green health bar over the red
-		rect(1500, 600, 400, 50, 20); 
+		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20); 
+		rectMode(CORNER);
+		
+		fill(66, 64, 77);
+		rect(UI_column1 - 10, UI_row1 - 10, 300, 70, 10);
+		
+		image(currencyIcon, UI_column1, UI_row1, 50, 50);
+		rect(UI_column1 - 10, UI_row2 - 10, 300, 70, 10);
+		image(standardAmmoIcon, UI_column1, UI_row2, 50, 50);
 		
 		fill(255);
-		textSize(32);					// draws the framerate to interface
-		text(frameRate, 1450, 700);
-		text("User X: " + user.getX(), 1450, 750);
-		text("User Y: " + user.getY(), 1700, 750);
-		text("Map X: " + map.getPlayerLocation()[0], 1450, 850);
-		text("Map Y: " + map.getPlayerLocation()[1], 1700, 850);
+		textSize((float)(width/100));
+		textAlign(CENTER, TOP);
+		text(" " + user.getCurrency(), MENU_WALL + (UI_WIDTH/4), UI_row1);
 		
-		drawButton("Menu", 1600, 1100);
+		
+		drawButton(menuButton);
+		drawButton(exitButton);
+		
 		
 		popStyle();						// restores the previous style
 	}
@@ -189,10 +294,28 @@ public class ProcessingMain extends PApplet
 	void drawMenu()
 	{
 		pushStyle();			// saves the current style
-		drawButton("Back", 1450, 1100);
-		drawButton("exit", 1700, 1100);
+		
+		drawButton(blackButton);
+		drawButton(redButton);
+		drawButton(greenButton);
+		drawButton(blueButton);
+		drawButton(backButton);
+		drawButton(helpButton);
 		
 		popStyle();				// restores the previous style
+	}
+	
+	/**
+	 * Method to draw the help menu
+	 */
+	void drawHelpMenu()
+	{
+		pushStyle();
+		text("Use 'WASD' to move your tank", UI_column1, UI_row1);
+		text("Press 'P' for performance", UI_column1, UI_row2);
+		
+		drawButton(backButton);
+		popStyle();
 	}
 	
 	/**
@@ -203,6 +326,7 @@ public class ProcessingMain extends PApplet
 		pushStyle();				// saves the current style
 		stroke(0);
 		
+		
 		for(int i = 0; i < map.getDimension(); i++)
 		{
 			for(int j = 0; j < map.getDimension(); j++)
@@ -212,18 +336,44 @@ public class ProcessingMain extends PApplet
 				
 				fill(255, 255, 255);						// default fill the rectangle unit with white
 				
-				if((unitX > user.getLocation()[0] - 55 && unitX < user.getLocation()[0] + 55)		
-						&& (unitY > user.getLocation()[1] - 55 && unitY < user.getLocation()[1] + 55))
+				if((unitX > user.getX() - 75 && unitX < user.getX() + 45)		
+						&& (unitY > user.getY() - 75 && unitY < user.getY() + 45))
 				{
 					fill(0, 255, 0);
 					int[] newLocation = new int[2];
 					newLocation[0] = i;
 					newLocation[1] = j;
 					map.setPlayerLocation(newLocation);
+					user.setLocation(newLocation);
 				}
 				rect(unitX, unitY, 100, 100);
 			}
 		}
+		popStyle();
+	}
+	
+	/**
+	 * Method to draw the performance data to the screen
+	 */
+	void drawPerformance()
+	{
+		int col1 = 30;
+		int col2 = 330;
+		
+		pushStyle();
+		fill(0);
+		//rect(10, 10, 100, 100);
+		textFont(FLOAT_FONT);
+		text(frameRate, col1, 100);
+		text("User X: " + user.getX(), col1, 150);
+		text("User Y: " + user.getY(), col2, 150);
+		text("Map X: " + map.getPlayerLocation()[0], col1, 200);
+		text("Map Y: " + map.getPlayerLocation()[1], col2, 200);
+		text("Barrel Angle: " + angle, col1, 250);
+		text("Mouse X: " + mouseX, col1, 300);
+		text("Mouse Y: " + mouseY, col2, 300);
+		text("Screen Width: " + width, col1, 350);
+		text("Screen Height: " + height, col1, 400);
 		popStyle();
 	}
 	
@@ -233,22 +383,62 @@ public class ProcessingMain extends PApplet
 	 */
 	public void mouseClicked()
 	{
-		if(menu == false)
+		if(!help)
 		{
-			if((mouseX > 1600 && mouseX < 1800) && (mouseY > 1100 && mouseY < 1150))
+			if(!menu)
 			{
-				menu = true;
+				if(menuButton.isInside(mouseX, mouseY))
+				{
+					menu = true;
+				}
+				if(exitButton.isInside(mouseX, mouseY))
+				{
+					exit();
+				}
+			}
+			else if(menu)
+			{
+				if(backButton.isInside(mouseX, mouseY))
+				{
+					menu = false;
+				}
+				if(helpButton.isInside(mouseX, mouseY))
+				{
+					help = true;
+				}
+				if(blackButton.isInside(mouseX, mouseY))
+				{
+					deSelect();
+					blackButton.select(true);
+					user.setColor(blackButton.getColor());
+				}
+				if(redButton.isInside(mouseX, mouseY))
+				{
+					deSelect();
+					redButton.select(true);
+					user.setColor(redButton.getColor());
+				}
+				if(greenButton.isInside(mouseX, mouseY))
+				{
+					deSelect();
+					greenButton.select(true);
+					user.setColor(greenButton.getColor());
+				}
+				if(blueButton.isInside(mouseX, mouseY))
+				{
+					deSelect();
+					blueButton.select(true);
+					user.setColor(blueButton.getColor());
+				}
+				
 			}
 		}
-		else
+		else if(help)
 		{
-			if((mouseX > 1450 && mouseX < 1650) && (mouseY > 1100 && mouseY < 1150))
+			if(backButton.isInside(mouseX, mouseY))
 			{
-				menu = false;
-			}
-			if((mouseX > 1700 && mouseX < 1900) && (mouseY > 1100 && mouseY < 1150))
-			{
-				exit();
+				help = false;
+				menu = true;
 			}
 		}
 	}
@@ -262,12 +452,16 @@ public class ProcessingMain extends PApplet
 	 */
 	public void keyPressed()
 	{
-	 // println("pressed " + key + " " + keyCode); 
+	 println("pressed " + key + " " + keyCode); 
 	 
+	 if (key == "p".charAt(0))
+	 {
+		 data = !data;
+	 }
 	 // move down if "S" key is pressed
 	 if (key == S_KEY)
 	 {
-	   user.setOrientation(true);		// set orientation to "true" because the tank will be oriented parallel to the y-axis
+	   user.isVertical(true);		// set orientation to "true" because the tank will be oriented parallel to the y-axis
 	   
 	   if(user.getY() < SCREEN_EDGE_BOTTOM)				// if user is above the bottom "soft" barrier
 	   {
@@ -291,7 +485,7 @@ public class ProcessingMain extends PApplet
 	 // move right if "D" key is pressed
 	 if (key == D_KEY)
 	 {
-	   user.setOrientation(false);		// set orientation to "false" because the tank will be oriented perpendicular to the y-axis
+	   user.isVertical(false);		// set orientation to "false" because the tank will be oriented perpendicular to the y-axis
 	   
 	   if(user.getX() < SCREEN_EDGE_RIGHT)
 	   {
@@ -315,7 +509,7 @@ public class ProcessingMain extends PApplet
 	 // move up if "W" key is pressed
 	 if (key == W_KEY)
 	 {
-	   user.setOrientation(true);		// set orientation to "true" because the tank will be oriented parallel to the y-axis
+	   user.isVertical(true);		// set orientation to "true" because the tank will be oriented parallel to the y-axis
 	   
 	   if(user.getY() > SCREEN_EDGE_TOP)
 	   {
@@ -339,7 +533,7 @@ public class ProcessingMain extends PApplet
 	 // move left if "A" key is pressed
 	 if (key == A_KEY)
 	 {
-	   user.setOrientation(false);		// set orientation to "false" because the tank will be oriented perpendicular to the y-axis
+	   user.isVertical(false);		// set orientation to "false" because the tank will be oriented perpendicular to the y-axis
 	   
 	   if(user.getX() > SCREEN_EDGE_LEFT)
 	   {
@@ -360,37 +554,145 @@ public class ProcessingMain extends PApplet
 	   }
 	 }
 	}
-
-	/**
-	 * Method called when a keyboard key is typed 
-	 * (pressed and released).
-	 */
-	public void keyTyped()
-	{
-	  // println("typed " + key + " " + keyCode);
-	}
-
-	/**
-	 * Method called when a keyboard key in released
-	 */
-	public void keyReleased()
-	{
-	  // println("released " + key + " " + keyCode);
-	}
 	
 	/**
 	 * Private method to draw standard button rather than 
 	 * retyping the same lines.
 	 */
-	private void drawButton(String label, int x, int y)
+	private void drawButton(Button someButton)
 	{
 		pushStyle();
-		fill(125, 93, 6);
+		textAlign(CENTER);
 		noStroke();
-		rect(x, y, 200, 50, 10);
+		
+		if(someButton.selected())
+		{
+			fill(255);
+			rect(someButton.getX() - (BORDER_WIDTH/2), someButton.getY() - (BORDER_WIDTH/2), 
+					someButton.getWidth() + BORDER_WIDTH, someButton.getHeight() + BORDER_WIDTH, 10);
+		}
+		
+		fill(someButton.getColor().getRed(), someButton.getColor().getGreen(), someButton.getColor().getBlue());
+		rect(someButton.getX(), someButton.getY(), someButton.getWidth(), someButton.getHeight(), 10);
+		
 		fill(255);
-		text(label, x + 50, y + 35);
+		text(someButton.getLabel(), someButton.getX() + (someButton.getWidth()/2), someButton.getY() + (someButton.getHeight()/2));
 		popStyle();
+	}
+	
+	/**
+	 * Private method to deselect all other tank colors
+	 */
+	private void deSelect()
+	{
+		blackButton.select(false);
+		redButton.select(false);
+		greenButton.select(false);
+		blueButton.select(false);
+	}
+	
+	/**
+	 * Private method to calculate tank barrel angle
+	 */
+	private void calculateBarrelAngle()
+	{
+		pushMatrix();
+		translate(user.getX(), user.getY());
+		int x;
+		int y;
+		float radians;
+		if(mouseX > user.getX())
+		{
+			x = mouseX - user.getX();
+			if(mouseY > user.getY())		// Q4
+			{
+				y = mouseY - user.getY();
+				radians = atan2(y, x);
+				angle = 270 + (90 - degrees(radians));
+			}
+			else							// Q1
+			{
+				y = user.getY() - mouseY;
+				radians = atan2(y, x);
+				angle = degrees(radians);
+			}
+		}
+		else
+		{
+			x = user.getX() - mouseX;
+			if(mouseY > user.getY())		// Q3
+			{
+				y = mouseY - user.getY();
+				radians = atan2(y, x);
+				angle = 180 + degrees(radians);
+			}
+			else							// Q2
+			{
+				y = user.getY() - mouseY;
+				radians = atan2(y, x);
+				angle = 90 + (90 - degrees(radians));
+			}
+		}
+		rotate(-radians(angle));
+		fill(0);
+		rectMode(CORNERS);
+		rect(-10, -10, 100, 10);
+		fill(160, 160, 160);
+		rect(90, -15, 120, 15);
+		rect(-20, -20, 20, 20);
+		
+		
+		popMatrix();
+	}
+	
+	
+//===========================================================
+//				   Initialization Methods
+//===========================================================
+	private void scaleFrame()
+	{
+		UI_WIDTH = width/4;
+		BORDER_WIDTH = width/160;
+		MENU_WALL = width - UI_WIDTH;
+		
+		SCREEN_EDGE_TOP = height/4;
+		SCREEN_EDGE_BOTTOM = 3 * (height/4);
+		SCREEN_EDGE_LEFT = width/4;
+		SCREEN_EDGE_RIGHT = width/2;
+		
+		UI_column0 = MENU_WALL + (UI_WIDTH/4);
+		UI_column1 = MENU_WALL + (BORDER_WIDTH * 2);
+		UI_column2 = UI_column1 + (UI_WIDTH/2);
+		
+		UI_row0 = (height*4)/9;
+		UI_row1 = (height*1)/2;
+		UI_row2 = (height*5)/9;
+		UI_row3 = (height*11)/18;
+		UI_row4 = (height*2)/3;
+		UI_row5 = (height*13)/18;
+		UI_row6 = (height*7/9);
+		UI_row7 = (height*5)/6;
+		UI_row8 = (height*8)/9;
+	}
+	
+	private void createButtons()
+	{
+		menuButton = new Button("Menu", UI_column1, UI_row8);
+		exitButton = new Button("End Game", UI_column2, UI_row8);
+		backButton = new Button("Back", UI_column1, UI_row8);
+		helpButton = new Button("Help", UI_column2, UI_row8);
+		blackButton = new Button(" ", UI_column1, UI_row1, new Color(0));
+		redButton = new Button(" ", UI_column1, UI_row2, new Color(255, 0, 0));
+		greenButton = new Button(" ", UI_column1, UI_row3, new Color(0, 255, 0));
+		blueButton = new Button(" ", UI_column1, UI_row4, new Color(0, 0, 255));
+	}
+	
+//=======================================================================
+//						Projectile Animations
+//=======================================================================
+	private void explosiveAnimation()
+	{
+		
 	}
 
 }
