@@ -146,5 +146,10 @@ public class Box
 		app.rect(x, y, width, height);
 		app.popStyle();
 	}
+	
+	public boolean pointIsInside(float pointX, float pointY)
+	{
+		return (pointX > getLeftEdge() && pointX < getRightEdge() && pointY > getTopEdge() && pointY < getBottomEdge());
+	}
 
 }

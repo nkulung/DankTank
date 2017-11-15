@@ -7,6 +7,7 @@ import main.ApplicationConstants;
 import main.Mode;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PImage;
 
 public class Tile implements ApplicationConstants
 {
@@ -130,6 +131,17 @@ public class Tile implements ApplicationConstants
 			type = TileType.RIGHT_HILL_FACE;
 			tileColor = GRASS_COLOR;
 			break;
+			
+		case "B":
+			type = TileType.BOTTOM_HILL_FACE;
+			tileColor = GRASS_COLOR;
+			break;
+			
+		case "C":
+			type = TileType.HILL_CORNER;
+			tileColor = GRASS_COLOR;
+			break;
+			
 		default:
 			type = TileType.NULL_TILE;
 			tileColor = Color.WHITE;
@@ -181,8 +193,7 @@ public class Tile implements ApplicationConstants
 			app.rectMode(PConstants.CENTER);
 			app.fill(tileColor.getRGB());
 			app.rect(x, y, length, length);
-			drawHills();
-			drawTileWall();
+			
 			if(mode == Mode.DATA_MODE)
 			{
 				app.textAlign(PConstants.CENTER);
@@ -201,7 +212,7 @@ public class Tile implements ApplicationConstants
 			app.stroke(0);
 			float shiftX = 20,
 				  shiftY = 50;
-			float x1 = x - length/2 - length/4,
+			float x1 = x - length/2,
 				  y1 = y - length,
 				  y2 = y - length/2,
 				  y3 = y + length/2;
@@ -209,15 +220,22 @@ public class Tile implements ApplicationConstants
 		}
 		else if(type == TileType.BOTTOM_HILL_FACE)
 		{
-			
+			app.stroke(0);
+			float x1 = x - length/2,
+				  x2 = x - length/4,
+				  x3 = x + length/2,
+				  x4 = x + length/2,
+				  y1 = y - length/2 - length/4,
+				  y2 = y + length/4;
+			app.quad(x1, y1, x2, y2, x3, y2, x4, y1);
 		}
 	}
 	
-	private void drawTileWall()
+	public void drawTileWall()
 	{
 		float wallsize = length/2;
 		float shiftX = 20,
-			  shiftY = 50;
+			  shiftY = 70;
 		
 		app.stroke(1);
 		if(type == TileType.VERTICAL_WALL_TILE)

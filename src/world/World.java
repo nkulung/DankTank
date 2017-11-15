@@ -103,6 +103,26 @@ public class World implements ApplicationConstants
 	}
 	
 	/**
+	 * Method to draw top layer graphics on top
+	 */
+	public void drawTopLayer()
+	{
+		for(int i = 0; i < WORLD_DIMENSION; i++)
+		{
+			for(int j = 0; j < WORLD_DIMENSION; j++)
+			{
+				if(renderBox.isInside(tileCollection[j][i].getCollisionBox()))
+				{
+					tileCollection[j][i].render(true);
+					tileCollection[j][i].drawTileWall();
+				}
+				else
+					tileCollection[j][i].render(false);
+			}
+		}
+	}
+	
+	/**
 	 * Method to get the player x axis location in the world
 	 * @return playerX
 	 */

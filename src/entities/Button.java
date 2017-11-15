@@ -11,6 +11,8 @@ import java.awt.Color;
 import main.ApplicationConstants;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PFont;
+import processing.core.PImage;
 
 public class Button implements ApplicationConstants
 {
@@ -21,6 +23,8 @@ public class Button implements ApplicationConstants
 	private int y;					// button y coordinate (center)
 	private boolean selected;		// boolean to check button selection
 	private Color buttonColor;		// color of the button
+	
+	private PImage buttonImage;
 	
 	/**
 	 * Main Constructor given 
@@ -42,6 +46,7 @@ public class Button implements ApplicationConstants
 		y = someY;
 		selected = false;
 		buttonColor = someColor;
+		buttonImage = app.loadImage("redButton.png");
 	}
 	
 	
@@ -104,37 +109,26 @@ public class Button implements ApplicationConstants
 	 */
 	public boolean isInside(float mouseX, float mouseY)
 	{
-		if(((mouseX > x) && (mouseX < x + BUTTON_WIDTH)) && ((mouseY > y) && (mouseY < y + BUTTON_HEIGHT)))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return ((mouseX > x) && (mouseX < x + BUTTON_WIDTH)) && ((mouseY > y) && (mouseY < y + BUTTON_HEIGHT));
 	}
 	
 	/**
 	 * Method to draw the button to the app window
 	 */
-	public void draw()
+	public void draw(PFont FLOAT_FONT)
 	{
 		app.pushStyle();
 		app.textAlign(PConstants.CENTER);
+		app.rectMode(PConstants.CORNER);
+		app.textFont(FLOAT_FONT);
 		app.noStroke();
 		
-		if(selected)
-		{
-			app.fill(255);
-			app.rect(x - (BORDER_WIDTH/2), y - (BORDER_WIDTH/2), 
-					BUTTON_WIDTH + BORDER_WIDTH, BUTTON_HEIGHT + BORDER_WIDTH, 10);
-		}
-		
-		app.fill(buttonColor.getRGB());
-		app.rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, 10);
+		//app.fill(buttonColor.getRGB());
+		//app.rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, 10);
+		app.image(buttonImage, x - 20, y - 20);
 		
 		app.fill(255);
-		app.text(label, x + (BUTTON_WIDTH/2), y + (BUTTON_HEIGHT/2));
+		app.text(label, x + (BUTTON_WIDTH/2), y + BUTTON_HEIGHT);
 		app.popStyle();
 	}
 	

@@ -28,8 +28,6 @@ public class Player extends Tank implements ApplicationConstants
 	private float[] location = new float[2];
 	
 	private Box collisionBox;
-	private Box leftCollisionBox;
-	private Box rightCollisionBox;
 	
 	private Color tankColor;
 	
@@ -52,17 +50,15 @@ public class Player extends Tank implements ApplicationConstants
 		currency = 50;
 		x = someX;
 		y = someY;
-		velocity = 25;
+		velocity = 50;
 		up = true;
 		location[0] = (x/100);
 		location[1] = (y/100);
 		tankColor = new Color(163, 162, 63);
 		size = TANK_SIZE;
-		standardRounds = 50;
+		standardRounds = 10;
 		angle = 0;
 		activeRounds = new ArrayList<Projectile>();
-		leftCollisionBox = new Box(theApp, x + 70, y - 55, 250, 50, new Color(255, 0, 0, 102));
-		rightCollisionBox = new Box(theApp, x, y + 100, 220, 40, new Color(255, 0, 0, 102));
 		collisionBox = new Box(theApp, x + xOffset, y + yOffset, size + xOffset*2, size + yOffset*2, new Color(255, 0, 0, 102));
 	}
 	
@@ -101,8 +97,11 @@ public class Player extends Tank implements ApplicationConstants
 	 */
 	public void shoot()
 	{
-		activeRounds.add(new StandardProjectile(app, x, y, angle));
-		standardRounds -= 1;
+		if(standardRounds > 0)
+		{
+			activeRounds.add(new StandardProjectile(app, x, y, angle));
+			standardRounds -= 1;
+		}
 	}
 	
 	public void draw(Mode mode)
@@ -113,9 +112,9 @@ public class Player extends Tank implements ApplicationConstants
 		float tempY = y - (size/2);
 		if(!up)
 		{
-			drawHorizontalWheels(tempX + 20, tempY);
+			drawHorizontalWheels(tempX, tempY);
 			drawTankBody(x, y);
-			drawHorizontalWheels(tempX + 20, tempY + size + 30);
+			drawHorizontalWheels(tempX, tempY + size + 30);
 		}
 		else
 		{
@@ -126,8 +125,6 @@ public class Player extends Tank implements ApplicationConstants
 		if(mode == Mode.COLLISION_BOX)
 		{
 			  collisionBox.draw();
-			  leftCollisionBox.draw();
-			  rightCollisionBox.draw();
 		}
 		calculateBarrelAngle();
 	  
@@ -165,7 +162,7 @@ public class Player extends Tank implements ApplicationConstants
 	private void drawVerticalWheels(float tempX, float tempY)
 	{
 		app.fill(TREAD_COLOR.getRGB());
-		for(int i = 0; i <= 7; i++)
+		for(int i = 0; i <= 5; i++)
 		{
 			app.beginShape();
 			app.vertex(tempX - 15, tempY + 15);		// top left - south
@@ -196,7 +193,7 @@ public class Player extends Tank implements ApplicationConstants
 	private void drawHorizontalWheels(float tempX, float tempY)
 	{
 		app.fill(TREAD_COLOR.getRGB());
-		for(int i = 0; i <= 7; i++)
+		for(int i = 0; i <= 5; i++)
 		{
 			app.beginShape();
 			app.vertex(tempX - 15, tempY + 15);
@@ -326,16 +323,12 @@ public class Player extends Tank implements ApplicationConstants
 	{
 		x = newX;
 		collisionBox.setX(newX + xOffset);
-		leftCollisionBox.setX(newX + 70);
-		rightCollisionBox.setX(newX + 70);
 	}
 	
 	public void setY(float newY)
 	{
 		y = newY;
 		collisionBox.setY(newY + yOffset);
-		leftCollisionBox.setY(newY - 55);
-		rightCollisionBox.setY(newY - 55);
 	}
 	
 	public void setLocation(float[] newLocation)
@@ -376,16 +369,6 @@ public class Player extends Tank implements ApplicationConstants
 	public Box getCollisionBox()
 	{
 		return collisionBox;
-	}
-	
-	public Box getLeftCollisionBox()
-	{
-		return leftCollisionBox;
-	}
-	
-	public Box getRightCollisionBox()
-	{
-		return rightCollisionBox;
 	}
 	
 	public void setCollisionBox(Box newBox)

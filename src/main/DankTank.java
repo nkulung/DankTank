@@ -65,22 +65,16 @@ public class DankTank extends PApplet implements ApplicationConstants
 	private Button backButton;
 	private Button exitButton;
 	private Button helpButton;
-	private Button blackButton;
-	private Button redButton;
-	private Button greenButton;
-	private Button blueButton;
+	private Button shopButton;
 	
-	
-	
-	private boolean menu;							// declaring the "main menu open" value
-	private boolean help;							// declaring the "help menu open" value
-	private boolean data;							// declaring the "data visible" value
 	private boolean animate;
 	
 	private Player user;									// declaring player tank object
 	private World gameWorld;										// declaring world object
+	private Shop shop;
 	
 	private Mode mode;
+	private Mode displayMode;
 	
 	/**
 	 * Settings method where window size is set,
@@ -103,6 +97,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 		FLOAT_FONT = createFont("BOLD", 40);
 		
 		mode = Mode.NO_MODE;
+		displayMode = Mode.MAIN_DISPLAY;
 		
 		currencyIcon = loadImage("coins.png");
 		standardAmmoIcon = loadImage("standardAmmo.png");
@@ -112,12 +107,9 @@ public class DankTank extends PApplet implements ApplicationConstants
 		speedIcon = loadImage("turboIcon.png");
 		armorIcon = loadImage("shield_blue.png");
 		
-		
+		shop = new Shop(this);
 		user = new Player(this, 400, 500);						// creates new Player 
 		gameWorld = new World(this, user.getLocation());		// creates a new World with the player location as the parameter
-		menu = false;								// menu is closed at program start
-		help = false;
-		data = false;
 		animate = true;
 		
 		scaleFrame();								// create dimensions based on monitor width & height
@@ -133,23 +125,25 @@ public class DankTank extends PApplet implements ApplicationConstants
 		frame++;
 		if(frame % 1 == 0)
 		{
-			background(GRASS_COLOR.getRGB());			// paints the background grey
+			background(WATER_COLOR.getRGB());			// paints the background grey
 			
 			gameWorld.draw(mode);									// draws the world first
 			drawUI();									// then draws the User Interface to the window
 			updateComponents();
-			if(!help)
+			if(displayMode == Mode.MAIN_DISPLAY)
 			{
-				if(!menu)
-				{
-					drawData();
-				}
-				else if(menu)
-				{
-					drawMenu();
-				}
+				drawData();
 			}
-			else if(help)
+			else if(displayMode == Mode.SHOP_DISPLAY)
+			{
+				shop.draw();
+				backButton.draw(FLOAT_FONT);
+			}
+			else if(displayMode == Mode.MENU_DISPLAY)
+			{
+				drawMenu();
+			}
+			else if(displayMode == Mode.HELP_DISPLAY)
 			{
 				drawHelpMenu();
 			}
@@ -185,6 +179,8 @@ public class DankTank extends PApplet implements ApplicationConstants
 		}
 		else if(mode == Mode.DATA_MODE)
 			drawPerformance();
+		
+		gameWorld.drawTopLayer();
 		
 		check();
 	}		
@@ -243,6 +239,11 @@ public class DankTank extends PApplet implements ApplicationConstants
 			    rect((MENU_WALL + 80) + (j*mapSize), 60 + (i*mapSize), mapSize, mapSize);
 		    }
 	    }
+	    rectMode(CENTER);
+		fill(255, 0, 0);				// draws the red health bar 
+		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20);
+		fill(0, 255, 0);				// draws the green health bar over the red
+		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20); 
 	    fill(0);
 	    textSize(20);
 	    text("fps: " + frameRate, MENU_WALL + 30, WIN_HEIGHT/2 - 30);
@@ -257,12 +258,6 @@ public class DankTank extends PApplet implements ApplicationConstants
 		pushStyle();					// saves the current style
 		stroke(0);
 		
-		rectMode(CENTER);
-		fill(255, 0, 0);				// draws the red health bar 
-		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20);
-		
-		fill(0, 255, 0);				// draws the green health bar over the red
-		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20); 
 		rectMode(CORNER);
 		
 		fill(66, 64, 77);
@@ -278,9 +273,9 @@ public class DankTank extends PApplet implements ApplicationConstants
 		text(" " + user.getCurrency(), MENU_WALL + (UI_WIDTH/4), UI_row1);
 		text(" " + user.getStandardProjectileRounds(), MENU_WALL + (UI_WIDTH/4), UI_row2);
 		
-		
-		menuButton.draw();
-		exitButton.draw();
+		shopButton.draw(FLOAT_FONT);
+		menuButton.draw(FLOAT_FONT);
+		exitButton.draw(FLOAT_FONT);
 		
 		
 		popStyle();						// restores the previous style
@@ -293,12 +288,8 @@ public class DankTank extends PApplet implements ApplicationConstants
 	{
 		pushStyle();			// saves the current style
 		
-		blackButton.draw();
-		redButton.draw();
-		greenButton.draw();
-		blueButton.draw();
-		backButton.draw();
-		helpButton.draw();
+		backButton.draw(FLOAT_FONT);
+		helpButton.draw(FLOAT_FONT);
 		
 		popStyle();				// restores the previous style
 	}
@@ -308,11 +299,12 @@ public class DankTank extends PApplet implements ApplicationConstants
 	 */
 	void drawHelpMenu()
 	{
-		pushStyle();
+		textFont(FLOAT_FONT);
 		text("Use 'WASD' to move your tank", UI_column1, UI_row1);
 		text("Press 'P' for performance", UI_column1, UI_row2);
+		text("Press 'C' to view collision detection", UI_column1, UI_row3);
 		
-		backButton.draw();
+		backButton.draw(FLOAT_FONT);
 		popStyle();
 	}
 	
@@ -325,7 +317,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 		int col2 = 330;
 		
 		pushStyle();
-		fill(0);
+		fill(255);
 		//rect(10, 10, 100, 100);
 		textFont(FLOAT_FONT);
 		text(frameRate, col1, 100);
@@ -345,70 +337,39 @@ public class DankTank extends PApplet implements ApplicationConstants
 	/**
 	 * Method called when mouse is clicked
 	 */
-	public void mouseClicked()
+	public void mouseReleased()
 	{
-		if(mouseX > 0 && mouseX < MENU_WALL)
-		{
+		if(gameWorld.getRenderBox().pointIsInside(mouseX, mouseY))
 			user.shoot();
-		}
-		else if(!help && mouseX > MENU_WALL)
+		else if(displayMode == Mode.MAIN_DISPLAY)
 		{
-			if(!menu)
-			{
-				if(menuButton.isInside(mouseX, mouseY))
-				{
-					menu = true;
-				}
-				if(exitButton.isInside(mouseX, mouseY))
-				{
-					exit();
-				}
-			}
-			else if(menu)
-			{
-				if(backButton.isInside(mouseX, mouseY))
-				{
-					menu = false;
-				}
-				if(helpButton.isInside(mouseX, mouseY))
-				{
-					help = true;
-				}
-				if(blackButton.isInside(mouseX, mouseY))
-				{
-					deSelect();
-					blackButton.select(true);
-					user.setColor(blackButton.getColor());
-				}
-				if(redButton.isInside(mouseX, mouseY))
-				{
-					deSelect();
-					redButton.select(true);
-					user.setColor(redButton.getColor());
-				}
-				if(greenButton.isInside(mouseX, mouseY))
-				{
-					deSelect();
-					greenButton.select(true);
-					user.setColor(greenButton.getColor());
-				}
-				if(blueButton.isInside(mouseX, mouseY))
-				{
-					deSelect();
-					blueButton.select(true);
-					user.setColor(blueButton.getColor());
-				}
-				
-			}
+			if(menuButton.isInside(mouseX, mouseY))
+				displayMode = Mode.MENU_DISPLAY;
+			else if(shopButton.isInside(mouseX, mouseY))
+				displayMode = Mode.SHOP_DISPLAY;
+			else if(exitButton.isInside(mouseX, mouseY))
+				exit();
 		}
-		else if(help)
+		else if(displayMode == Mode.SHOP_DISPLAY)
 		{
 			if(backButton.isInside(mouseX, mouseY))
-			{
-				help = false;
-				menu = true;
-			}
+				displayMode = Mode.MAIN_DISPLAY;
 		}
+		else if(displayMode == Mode.MENU_DISPLAY)
+		{
+			if(backButton.isInside(mouseX, mouseY))
+					displayMode = Mode.MAIN_DISPLAY;
+			else if(helpButton.isInside(mouseX, mouseY))
+				displayMode = Mode.HELP_DISPLAY;
+				
+		}
+		else if(displayMode == Mode.HELP_DISPLAY)
+		{
+			if(backButton.isInside(mouseX, mouseY))
+				displayMode = Mode.MENU_DISPLAY;
+		}
+		
+				
 	}
 	
 	
@@ -431,7 +392,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 		 else if(mode == Mode.DATA_MODE)
 			 mode = Mode.NO_MODE;
 	 }
-	 if(key == "c".charAt(0))
+	 else if(key == "c".charAt(0))
 	 {
 		 if(mode == Mode.NO_MODE)
 			 mode = Mode.COLLISION_BOX;
@@ -442,7 +403,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 			 
 	 }
 	 // move down if "S" key is pressed
-	 if (key == S_KEY)
+	 else if (key == S_KEY)
 	 {
 	   user.isVertical(true);		// set orientation to "true" because the tank will be oriented parallel to the y-axis
 	   
@@ -457,7 +418,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 	 }
 	 
 	 // move right if "D" key is pressed
-	 if (key == D_KEY)
+	 else if (key == D_KEY)
 	 {
 	   user.isVertical(false);		// set orientation to "false" because the tank will be oriented perpendicular to the y-axis
 	   
@@ -472,7 +433,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 	 }
 	 
 	 // move up if "W" key is pressed
-	 if (key == W_KEY)
+	 else if (key == W_KEY)
 	 {
 	   user.isVertical(true);		// set orientation to "true" because the tank will be oriented parallel to the y-axis
 	   
@@ -487,7 +448,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 	 }
 	 
 	 // move left if "A" key is pressed
-	 if (key == A_KEY)
+	 else if (key == A_KEY)
 	 {
 	   user.isVertical(false);		// set orientation to "false" because the tank will be oriented perpendicular to the y-axis
 	   
@@ -500,18 +461,6 @@ public class DankTank extends PApplet implements ApplicationConstants
 		   gameWorld.playerLeft(user.getVelocity());
 	   }
 	 }
-	}
-	
-	
-	/**
-	 * Private method to deselect all other tank colors
-	 */
-	private void deSelect()
-	{
-		blackButton.select(false);
-		redButton.select(false);
-		greenButton.select(false);
-		blueButton.select(false);
 	}
 	
 	private void updateComponents()
@@ -549,14 +498,11 @@ public class DankTank extends PApplet implements ApplicationConstants
 	
 	private void createButtons()
 	{
-		menuButton = new Button(this, "Menu", UI_column1, UI_row8);
-		exitButton = new Button(this, "End Game", UI_column2, UI_row8);
-		backButton = new Button(this, "Back", UI_column1, UI_row8);
-		helpButton = new Button(this, "Help", UI_column2, UI_row8);
-		blackButton = new Button(this, " ", UI_column1, UI_row1, new Color(0));
-		redButton = new Button(this, " ", UI_column1, UI_row2, new Color(255, 0, 0));
-		greenButton = new Button(this, " ", UI_column1, UI_row3, new Color(0, 255, 0));
-		blueButton = new Button(this, " ", UI_column1, UI_row4, new Color(0, 0, 255));
+		shopButton = new Button(this, "Shop", UI_column1 + 20, UI_row7);
+		menuButton = new Button(this, "Menu", UI_column1 + 20, UI_row8);
+		exitButton = new Button(this, "End Game", UI_column2 + 20, UI_row8);
+		backButton = new Button(this, "Back", UI_column1 + 20, UI_row8);
+		helpButton = new Button(this, "Help", UI_column2 + 20, UI_row8);
 	}
 	
 //=======================================================================
