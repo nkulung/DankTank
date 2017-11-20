@@ -4,10 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import entities.Box;
-import entities.Projectile;
-import entities.StandardProjectile;
-import entities.Tank;
+import entities.*;
 import processing.core.PApplet;
 import processing.core.PConstants;
 
@@ -38,7 +35,11 @@ public class Player extends Tank implements ApplicationConstants
 	
 	private int currency;						// player currency
 	private int standardRounds;
+	private int fireRounds;
+	private int explosiveRounds;
+	private int scatterRounds;
 	
+	private Mode selectedRound;
 	
 	/**
 	 * Default Constructor
@@ -47,7 +48,7 @@ public class Player extends Tank implements ApplicationConstants
 	{
 		app = theApp;
 		health = 100;
-		currency = 50;
+		currency = 500;
 		x = someX;
 		y = someY;
 		velocity = 50;
@@ -57,9 +58,13 @@ public class Player extends Tank implements ApplicationConstants
 		tankColor = new Color(163, 162, 63);
 		size = TANK_SIZE;
 		standardRounds = 10;
+		fireRounds = 10;
+		explosiveRounds = 10;
+		scatterRounds = 10;
 		angle = 0;
 		activeRounds = new ArrayList<Projectile>();
 		collisionBox = new Box(theApp, x + xOffset, y + yOffset, size + xOffset*2, size + yOffset*2, new Color(255, 0, 0, 102));
+		setSelectedRound(Mode.STANDARD);
 	}
 	
 	/**
@@ -72,12 +77,59 @@ public class Player extends Tank implements ApplicationConstants
 	}
 	
 	/**
-	 * 
-	 * @return
+	 * Method to get the number of standard rounds
+	 * @return standardRounds
 	 */
 	public int getStandardProjectileRounds()
 	{
 		return standardRounds;
+	}
+	
+	public void addStandardProjectileRounds(int newRounds)
+	{
+		standardRounds += newRounds;
+	}
+	
+	/**
+	 * Method to get the number of explosive rounds
+	 * @return explosiveRounds
+	 */
+	public int getExplosiveProjectileRounds()
+	{
+		return explosiveRounds;
+	}
+	
+	public void addExplosiveProjectileRounds(int newRounds)
+	{
+		explosiveRounds += newRounds;
+	}
+	
+	/**
+	 * Method to get the number of fire rounds
+	 * @return fireRounds
+	 */
+	public int getFireProjectileRounds()
+	{
+		return fireRounds;
+	}
+	
+	public void addFireProjectileRounds(int newRounds)
+	{
+		fireRounds += newRounds;
+	}
+	
+	/**
+	 * Method to get the number of scatter rounds
+	 * @return scatterRounds
+	 */
+	public int getScatterProjectileRounds()
+	{
+		return scatterRounds;
+	}
+	
+	public void addScatterProjectileRounds(int newRounds)
+	{
+		scatterRounds += newRounds;
 	}
 	
 	/**
@@ -97,10 +149,40 @@ public class Player extends Tank implements ApplicationConstants
 	 */
 	public void shoot()
 	{
-		if(standardRounds > 0)
+		if(selectedRound == Mode.STANDARD)
 		{
-			activeRounds.add(new StandardProjectile(app, x, y, angle));
-			standardRounds -= 1;
+			if(standardRounds > 0)
+			{
+				activeRounds.add(new StandardProjectile(app, x, y, angle));
+				standardRounds -= 1;
+			}
+		}
+		else if(selectedRound == Mode.EXPLOSIVE)
+		{
+			if(explosiveRounds > 0)
+			{
+				activeRounds.add(new ExplosiveProjectile(app, x, y, angle));
+				explosiveRounds -= 1;
+			}
+		}
+		else if(selectedRound == Mode.FIRE)
+		{
+			if(fireRounds > 0)
+			{
+				activeRounds.add(new FireProjectile(app, x, y, angle));
+				fireRounds -= 1;
+			}
+		}
+		else if(selectedRound == Mode.SCATTER)
+		{
+			if(scatterRounds > 0)
+			{
+				for(int i = 0; i < 5; i++)
+				{
+					activeRounds.add(new StandardProjectile(app, x, y, angle + (app.random(-30, 30))));
+				}
+				scatterRounds -= 1;
+			}
 		}
 	}
 	
@@ -374,6 +456,16 @@ public class Player extends Tank implements ApplicationConstants
 	public void setCollisionBox(Box newBox)
 	{
 		collisionBox = newBox;
+	}
+
+	public Mode getSelectedRound() 
+	{
+		return selectedRound;
+	}
+
+	public void setSelectedRound(Mode selectedRound) 
+	{
+		this.selectedRound = selectedRound;
 	}
 
 }

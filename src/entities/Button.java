@@ -19,12 +19,14 @@ public class Button implements ApplicationConstants
 	private PApplet app;			// represents the main PApplet app
 	
 	private String label;			// represents the button text as a string
-	private int x;					// button x coordinate (center)
-	private int y;					// button y coordinate (center)
+	private float x;					// button x coordinate (center)
+	private float y;					// button y coordinate (center)
 	private boolean selected;		// boolean to check button selection
 	private Color buttonColor;		// color of the button
 	
 	private PImage buttonImage;
+	
+	private boolean ammoButton;
 	
 	/**
 	 * Main Constructor given 
@@ -32,13 +34,13 @@ public class Button implements ApplicationConstants
 	 * @param someX
 	 * @param someY
 	 */
-	public Button(PApplet theApp, String someLabel, int someX, int someY)
+	public Button(PApplet theApp, String someLabel, float someX, float someY)
 	{
 		this(theApp, someLabel, someX, someY, BUTTON_COLOR);
 	}
 	
 	// Constructor for button with unique color
-	public Button(PApplet theApp, String someLabel, int someX, int someY, Color someColor)
+	public Button(PApplet theApp, String someLabel, float someX, float someY, Color someColor)
 	{
 		app = theApp;
 		label = someLabel;
@@ -47,6 +49,7 @@ public class Button implements ApplicationConstants
 		selected = false;
 		buttonColor = someColor;
 		buttonImage = app.loadImage("redButton.png");
+		setAmmoButton(false);
 	}
 	
 	
@@ -55,12 +58,12 @@ public class Button implements ApplicationConstants
 		return label;
 	}
 	
-	public int getX()
+	public float getX()
 	{
 		return x;
 	}
 	
-	public int getY()
+	public float getY()
 	{
 		return y;
 	}
@@ -123,13 +126,35 @@ public class Button implements ApplicationConstants
 		app.textFont(FLOAT_FONT);
 		app.noStroke();
 		
-		//app.fill(buttonColor.getRGB());
-		//app.rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, 10);
-		app.image(buttonImage, x - 20, y - 20);
-		
-		app.fill(255);
-		app.text(label, x + (BUTTON_WIDTH/2), y + BUTTON_HEIGHT);
+		if(ammoButton)
+		{
+			if(selected)
+			{
+				app.fill(255);
+				app.rect(x - BORDER_WIDTH/2, y - BORDER_WIDTH/2, BUTTON_WIDTH + BORDER_WIDTH, BUTTON_HEIGHT + BORDER_WIDTH, 10);
+			}
+			app.fill(buttonColor.getRGB());
+			app.rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, 10);
+			app.fill(255);
+			app.text(label, x + (BUTTON_WIDTH*3/4), y + BUTTON_HEIGHT*3/4);
+		}
+		else
+		{
+			app.image(buttonImage, x - 20, y - 20);
+			app.fill(255);
+			app.text(label, x + (BUTTON_WIDTH/2), y + BUTTON_HEIGHT);
+		}
 		app.popStyle();
+	}
+
+	public boolean isAmmoButton() 
+	{
+		return ammoButton;
+	}
+
+	public void setAmmoButton(boolean ammoButton) 
+	{
+		this.ammoButton = ammoButton;
 	}
 	
 	

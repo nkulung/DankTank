@@ -7,6 +7,11 @@ public interface ApplicationConstants
 	float WIN_WIDTH = 3200;
 	float WIN_HEIGHT = 1800;
 	
+	float SCREEN_EDGE_TOP = WIN_HEIGHT/4;
+	float SCREEN_EDGE_BOTTOM = 3 * (WIN_HEIGHT/4);
+	float SCREEN_EDGE_LEFT = WIN_WIDTH/4;
+	float SCREEN_EDGE_RIGHT = WIN_WIDTH/2;
+	
 	// User Interface variables
 	float UI_WIDTH = WIN_WIDTH/4;
 	float MENU_WALL = WIN_WIDTH - UI_WIDTH;
@@ -29,6 +34,8 @@ public interface ApplicationConstants
 	
 	Color TREAD_COLOR = new Color(0, 51, 51);
 	
+	Color AMMO_BACKGROUND = new Color(66, 64, 77);
+	Color TRIM_COLOR = new Color(125, 93, 6);
 	Color BUTTON_COLOR = new Color(125, 93, 6);	// default button color
 	Color DIRT_COLOR = new Color(87, 59, 12);
 	Color GRASS_COLOR = new Color(0, 92, 9);

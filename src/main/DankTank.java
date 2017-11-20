@@ -26,12 +26,6 @@ public class DankTank extends PApplet implements ApplicationConstants
 	private static final int W_KEY = 119;			// initializing the "W" key code
 	private static final int A_KEY = 97;			// initializing the "A" key code
 	
-	// Player window variables
-	private int SCREEN_EDGE_TOP;		// top edge coordinate
-	private int SCREEN_EDGE_BOTTOM;		// bottom edge coordinate
-	private int SCREEN_EDGE_LEFT;		// left edge coordinate
-	private int SCREEN_EDGE_RIGHT;		// right edge coordinate
-	
 	private PFont FLOAT_FONT;
 	
 	// UI column and row coordinates
@@ -53,12 +47,13 @@ public class DankTank extends PApplet implements ApplicationConstants
 	PImage currencyIcon;
 	PImage standardAmmoIcon;
 	PImage burnAmmoIcon;
-	PImage grassBlock;
-	PImage heart;
-	PImage speedIcon;
-	PImage armorIcon;
-	PImage damageIcon;
+	PImage explosiveAmmoIcon;
+	PImage scatterAmmoIcon;
 	
+	private Button standardButton;
+	private Button explosiveButton;
+	private Button fireButton;
+	private Button scatterButton;
 	
 	// Button instantiation
 	private Button menuButton;
@@ -75,6 +70,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 	
 	private Mode mode;
 	private Mode displayMode;
+	private Mode shopMode;
 	
 	/**
 	 * Settings method where window size is set,
@@ -98,14 +94,13 @@ public class DankTank extends PApplet implements ApplicationConstants
 		
 		mode = Mode.NO_MODE;
 		displayMode = Mode.MAIN_DISPLAY;
+		shopMode = Mode.NO_MODE;
 		
 		currencyIcon = loadImage("coins.png");
 		standardAmmoIcon = loadImage("standardAmmo.png");
 		burnAmmoIcon = loadImage("burn.png");
-		grassBlock = loadImage("grassBlock.png");
-		
-		speedIcon = loadImage("turboIcon.png");
-		armorIcon = loadImage("shield_blue.png");
+		explosiveAmmoIcon = loadImage("explosiveShot.png");
+		scatterAmmoIcon = loadImage("scatterShot.png");
 		
 		shop = new Shop(this);
 		user = new Player(this, 400, 500);						// creates new Player 
@@ -128,25 +123,6 @@ public class DankTank extends PApplet implements ApplicationConstants
 			background(WATER_COLOR.getRGB());			// paints the background grey
 			
 			gameWorld.draw(mode);									// draws the world first
-			drawUI();									// then draws the User Interface to the window
-			updateComponents();
-			if(displayMode == Mode.MAIN_DISPLAY)
-			{
-				drawData();
-			}
-			else if(displayMode == Mode.SHOP_DISPLAY)
-			{
-				shop.draw();
-				backButton.draw(FLOAT_FONT);
-			}
-			else if(displayMode == Mode.MENU_DISPLAY)
-			{
-				drawMenu();
-			}
-			else if(displayMode == Mode.HELP_DISPLAY)
-			{
-				drawHelpMenu();
-			}
 			
 			fill(0);
 			for(int i = 0; i < user.getActiveRounds().size(); i++)	// for every projectile in the arraylist of active projectiles
@@ -182,7 +158,25 @@ public class DankTank extends PApplet implements ApplicationConstants
 		
 		gameWorld.drawTopLayer();
 		
+		drawUI();									// then draws the User Interface to the window
+		if(displayMode == Mode.MAIN_DISPLAY)
+		{
+			drawData();
+		}
+		else if(displayMode == Mode.MENU_DISPLAY)
+		{
+			drawMenu();
+		}
+		else if(displayMode == Mode.HELP_DISPLAY)
+		{
+			drawHelpMenu();
+		}
 		check();
+		
+		if(shopMode == Mode.SHOP_DISPLAY)
+		{
+			shop.draw(FLOAT_FONT);
+		}
 	}		
 	
 	/**
@@ -192,12 +186,19 @@ public class DankTank extends PApplet implements ApplicationConstants
 	{
 		if(mouseX < MENU_WALL)
 		{
-			cursor(CROSS);
+			if(shopMode == Mode.SHOP_DISPLAY && shop.isInside(mouseX, mouseY))
+				cursor(HAND);
+			else
+				cursor(CROSS);
 		}
 		else
 		{
 			cursor(HAND);
 		}
+		standardButton.setLabel(Integer.toString(user.getStandardProjectileRounds()));
+		explosiveButton.setLabel(Integer.toString(user.getExplosiveProjectileRounds()));
+		fireButton.setLabel(Integer.toString(user.getFireProjectileRounds()));
+		scatterButton.setLabel(Integer.toString(user.getScatterProjectileRounds()));
 	}
 	
 	/**
@@ -210,7 +211,7 @@ public class DankTank extends PApplet implements ApplicationConstants
 		fill(112, 109, 99);						// fill with grey and draw UI background
 	    rect(MENU_WALL, 0, UI_WIDTH, WIN_HEIGHT);
 	  
-	    fill(125, 93, 6);						// fill with brown and draw borders
+	    fill(WOOD_COLOR.getRGB());						// fill with brown and draw borders
 	    noStroke();
 	    rect(MENU_WALL, 0, BORDER_WIDTH, WIN_HEIGHT);			// left menu border
 	    rect(0, 0, BORDER_WIDTH, WIN_HEIGHT);
@@ -241,12 +242,22 @@ public class DankTank extends PApplet implements ApplicationConstants
 	    }
 	    rectMode(CENTER);
 		fill(255, 0, 0);				// draws the red health bar 
-		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20);
+		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, UI_WIDTH*3/4, 50, 20);
 		fill(0, 255, 0);				// draws the green health bar over the red
-		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, 500, 50, 20); 
+		rect(MENU_WALL + (UI_WIDTH/2), UI_row0, UI_WIDTH*3/4, 50, 20); 
+		
 	    fill(0);
 	    textSize(20);
 	    text("fps: " + frameRate, MENU_WALL + 30, WIN_HEIGHT/2 - 30);
+	    
+	    rectMode(CORNER);
+	    fill(66, 64, 77);
+		rect(UI_column1 - 10, UI_row1 - 10, 300, 70, 10);	// currency rectangle
+		image(currencyIcon, UI_column1, UI_row1, 50, 50);	// currency icon
+		fill(255);
+		textSize((float)(width/100));
+		textAlign(CENTER, TOP);
+		text(" " + user.getCurrency(), MENU_WALL + (UI_WIDTH/4), UI_row1);
 	    popStyle();
 	}
 	
@@ -260,18 +271,18 @@ public class DankTank extends PApplet implements ApplicationConstants
 		
 		rectMode(CORNER);
 		
-		fill(66, 64, 77);
-		rect(UI_column1 - 10, UI_row1 - 10, 300, 70, 10);
 		
-		image(currencyIcon, UI_column1, UI_row1, 50, 50);
-		rect(UI_column1 - 10, UI_row2 - 10, 300, 70, 10);
-		image(standardAmmoIcon, UI_column1, UI_row2, 50, 50);
+		standardButton.draw(FLOAT_FONT);
+		image(standardAmmoIcon, UI_column1 + 20, UI_row2 + 20, 50, 50);		// standard ammo icon
 		
-		fill(255);
-		textSize((float)(width/100));
-		textAlign(CENTER, TOP);
-		text(" " + user.getCurrency(), MENU_WALL + (UI_WIDTH/4), UI_row1);
-		text(" " + user.getStandardProjectileRounds(), MENU_WALL + (UI_WIDTH/4), UI_row2);
+		explosiveButton.draw(FLOAT_FONT);
+		image(explosiveAmmoIcon, UI_column1 + 20, UI_row3 + 20, 50, 50);	// explosive ammo icon
+		
+		fireButton.draw(FLOAT_FONT);
+		image(burnAmmoIcon, UI_column1 + 20, UI_row4 + 20, 50, 50);
+		
+		scatterButton.draw(FLOAT_FONT);
+		image(scatterAmmoIcon, UI_column1 + 20, UI_row5 + 20, 50, 50);
 		
 		shopButton.draw(FLOAT_FONT);
 		menuButton.draw(FLOAT_FONT);
@@ -340,21 +351,83 @@ public class DankTank extends PApplet implements ApplicationConstants
 	public void mouseReleased()
 	{
 		if(gameWorld.getRenderBox().pointIsInside(mouseX, mouseY))
-			user.shoot();
+		{
+			if(shopMode == Mode.NO_MODE)
+				user.shoot();
+			else if(shopMode == Mode.SHOP_DISPLAY)
+			{
+				if(shop.getStandardAmmoButton().isInside(mouseX - RENDER_ORIGIN_X, mouseY - RENDER_ORIGIN_Y))
+				{
+					if(user.getStandardProjectileRounds() < 50)
+					{
+						user.addStandardProjectileRounds(5);
+					}
+				}
+				else if(shop.getFireAmmoButton().isInside(mouseX - RENDER_ORIGIN_X, mouseY - RENDER_ORIGIN_Y))
+				{
+					if(user.getFireProjectileRounds() < 50 && user.getCurrency() >= 5)
+					{
+						user.addFireProjectileRounds(5);
+						user.setCurrency(user.getCurrency() - 5);
+					}
+				}
+				else if(shop.getExplosiveAmmoButton().isInside(mouseX - RENDER_ORIGIN_X, mouseY - RENDER_ORIGIN_Y))
+				{
+					if(user.getExplosiveProjectileRounds() < 50 && user.getCurrency() >= 10)
+					{
+						user.addExplosiveProjectileRounds(5);
+						user.setCurrency(user.getCurrency() - 10);
+					}
+				}
+				else if(shop.getScatterAmmoButton().isInside(mouseX - RENDER_ORIGIN_X, mouseY - RENDER_ORIGIN_Y))
+				{
+					if(user.getScatterProjectileRounds() < 50 && user.getCurrency() >= 10)
+					{
+						user.addScatterProjectileRounds(5);
+						user.setCurrency(user.getCurrency() - 10);
+					}
+				}
+			}
+		}
 		else if(displayMode == Mode.MAIN_DISPLAY)
 		{
 			if(menuButton.isInside(mouseX, mouseY))
 				displayMode = Mode.MENU_DISPLAY;
 			else if(shopButton.isInside(mouseX, mouseY))
-				displayMode = Mode.SHOP_DISPLAY;
+			{
+				if(shopMode == Mode.NO_MODE)
+					shopMode = Mode.SHOP_DISPLAY;
+				else
+					shopMode = Mode.NO_MODE;
+			}
 			else if(exitButton.isInside(mouseX, mouseY))
 				exit();
+			else if(standardButton.isInside(mouseX, mouseY))
+			{
+				deselectAmmoButtons();
+				standardButton.select(true);
+				user.setSelectedRound(Mode.STANDARD);
+			}
+			else if(explosiveButton.isInside(mouseX, mouseY))
+			{
+				deselectAmmoButtons();
+				explosiveButton.select(true);
+				user.setSelectedRound(Mode.EXPLOSIVE);
+			}
+			else if(fireButton.isInside(mouseX, mouseY))
+			{
+				deselectAmmoButtons();
+				fireButton.select(true);
+				user.setSelectedRound(Mode.FIRE);
+			}
+			else if(scatterButton.isInside(mouseX, mouseY))
+			{
+				deselectAmmoButtons();
+				scatterButton.select(true);
+				user.setSelectedRound(Mode.SCATTER);
+			}
 		}
-		else if(displayMode == Mode.SHOP_DISPLAY)
-		{
-			if(backButton.isInside(mouseX, mouseY))
-				displayMode = Mode.MAIN_DISPLAY;
-		}
+		
 		else if(displayMode == Mode.MENU_DISPLAY)
 		{
 			if(backButton.isInside(mouseX, mouseY))
@@ -463,11 +536,6 @@ public class DankTank extends PApplet implements ApplicationConstants
 	 }
 	}
 	
-	private void updateComponents()
-	{
-
-	}
-	
 	
 	
 //===========================================================
@@ -475,11 +543,6 @@ public class DankTank extends PApplet implements ApplicationConstants
 //===========================================================
 	private void scaleFrame()
 	{
-		
-		SCREEN_EDGE_TOP = height/4;
-		SCREEN_EDGE_BOTTOM = 3 * (height/4);
-		SCREEN_EDGE_LEFT = width/4;
-		SCREEN_EDGE_RIGHT = width/2;
 		
 		UI_column0 = (int) (MENU_WALL + (UI_WIDTH/4));
 		UI_column1 = (int) (MENU_WALL + (BORDER_WIDTH * 2));
@@ -503,6 +566,25 @@ public class DankTank extends PApplet implements ApplicationConstants
 		exitButton = new Button(this, "End Game", UI_column2 + 20, UI_row8);
 		backButton = new Button(this, "Back", UI_column1 + 20, UI_row8);
 		helpButton = new Button(this, "Help", UI_column2 + 20, UI_row8);
+		
+		standardButton = new Button(this, Integer.toString(user.getStandardProjectileRounds()), UI_column1, UI_row2, AMMO_BACKGROUND);
+		standardButton.setAmmoButton(true);
+		standardButton.select(true);
+		explosiveButton = new Button(this, Integer.toString(user.getExplosiveProjectileRounds()), UI_column1, UI_row3, AMMO_BACKGROUND);
+		explosiveButton.setAmmoButton(true);
+		fireButton = new Button(this, Integer.toString(user.getFireProjectileRounds()), UI_column1, UI_row4, AMMO_BACKGROUND);
+		fireButton.setAmmoButton(true);
+		scatterButton = new Button(this, Integer.toString(user.getScatterProjectileRounds()), UI_column1, UI_row5, AMMO_BACKGROUND);
+		scatterButton.setAmmoButton(true);
+		
+	}
+	
+	private void deselectAmmoButtons()
+	{
+		standardButton.select(false);
+		explosiveButton.select(false);
+		fireButton.select(false);
+		scatterButton.select(false);
 	}
 	
 //=======================================================================
