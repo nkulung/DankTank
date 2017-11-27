@@ -10,6 +10,7 @@ https://processing.org/reference/
 Tutorial to import the processing core into eclipse:
 https://processing.org/tutorials/eclipse/
 
+![alt text](https://raw.githubusercontent.com/nkulung/DankTank/master/dank_tank.png)
 
 Dank Tank is a top-down tank shooter game where the player can destroy enemies, collect currency, purchase items, and try to become the best tank the world has ever seen.
 
