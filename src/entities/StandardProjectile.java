@@ -2,6 +2,7 @@ package entities;
 
 import java.awt.Color;
 
+import main.Mode;
 import processing.core.PApplet;
 
 public class StandardProjectile extends Projectile
@@ -16,26 +17,32 @@ public class StandardProjectile extends Projectile
 	private float dy;
 	private float baseDamage;
 	private boolean active;
+	private boolean animation;
 	private float angle;
 	private float diameter;
 	
-	private float timer;
+	private int timer;
+	private float range;
 	
 	private Box collisionBox;
 	
-	public StandardProjectile(PApplet theApp, float userX, float userY, float someAngle)
+	private Mode projectileMode;
+	
+	public StandardProjectile(PApplet app, float x, float y, float angle, float range)
 	{
-		app = theApp;
+		this.app = app;
 		velocity = 30;
-		x = userX;
-		y = userY;
-		angle = -someAngle;
-		dx = (float)(velocity * Math.cos(PApplet.radians(angle)));
-		dy = (float)(velocity * Math.sin(PApplet.radians(angle)));
+		this.x = x;
+		this.y = y;
+		this.angle = -angle;
+		dx = (float)(velocity * Math.cos(PApplet.radians(this.angle)));
+		dy = (float)(velocity * Math.sin(PApplet.radians(this.angle)));
 		baseDamage = 20;
 		diameter = 20;
 		active = true;
-		collisionBox = new Box(theApp, x, y, diameter + 5, diameter + 5, new Color(255, 0, 0, 102));
+		collisionBox = new Box(this.app, this.x, this.y, diameter + 5, diameter + 5, new Color(255, 0, 0, 102));
+		setProjectileMode(Mode.STANDARD);
+		this.range = range;
 	}
 	
 	/**
@@ -98,11 +105,13 @@ public class StandardProjectile extends Projectile
 	public void setX(float newX)
 	{
 		x = newX;
+		collisionBox.setX(x);
 	}
 	
 	public void setY(float newY)
 	{
 		y = newY;
+		collisionBox.setY(y);
 	}
 	
 	public void setBaseDamage(int newDamage)
@@ -110,9 +119,9 @@ public class StandardProjectile extends Projectile
 		baseDamage = newDamage;
 	}
 	
-	public void setActive(boolean someBool)
+	public void setActive(boolean active)
 	{
-		active = someBool;
+		this.active = active;
 	}
 	
 	public void setAngle(float newAngle)
@@ -122,7 +131,6 @@ public class StandardProjectile extends Projectile
 	
 	public void draw()
 	{
-		timer++;
 		if(timer > 50)
 			active = false;
 		app.pushMatrix();
@@ -139,10 +147,50 @@ public class StandardProjectile extends Projectile
 	
 	public void animate()
 	{
+		timer++;
 		x += dx;
 		y += dy;
 		collisionBox.setX(x);
 		collisionBox.setY(y);
+	}
+
+	/**
+	 * @return the projectileMode
+	 */
+	public Mode getProjectileMode() {
+		return projectileMode;
+	}
+
+	/**
+	 * @param projectileMode the projectileMode to set
+	 */
+	public void setProjectileMode(Mode projectileMode) {
+		this.projectileMode = projectileMode;
+	}
+
+	@Override
+	public int getTimer() 
+	{
+		return timer;
+	}
+
+	@Override
+	public void setTimer(int timer) 
+	{
+		this.timer = timer;
+	}
+
+	@Override
+	public boolean isAnimation() 
+	{
+		return animation;
+	}
+
+	@Override
+	public void setAnimation(boolean animation) 
+	{
+		if(animation == true)
+			active = false;
 	}
 
 }

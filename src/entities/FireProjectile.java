@@ -2,6 +2,7 @@ package entities;
 
 import java.awt.Color;
 
+import main.Mode;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -17,16 +18,20 @@ private PApplet app;
 	private float dy;
 	private float baseDamage;
 	private boolean active;
+	private boolean animation;
 	private float angle;
 	private float diameter;
 	
-	private float timer;
+	private int timer;
 	
 	private Box collisionBox;
 	private ParticleSystem ps;
 	
+	private Mode particleMode;
+	
 	public FireProjectile(PApplet theApp, float userX, float userY, float someAngle)
 	{
+		timer = 0;
 		app = theApp;
 		velocity = 30;
 		x = userX;
@@ -37,8 +42,10 @@ private PApplet app;
 		baseDamage = 20;
 		diameter = 20;
 		active = true;
+		animation = false;
 		collisionBox = new Box(theApp, x, y, diameter + 5, diameter + 5, new Color(255, 0, 0, 102));
 		ps = new ParticleSystem(app, new PVector(0,0), angle);
+		projectileMode = Mode.FIRE;
 	}
 	
 	/**
@@ -71,11 +78,6 @@ private PApplet app;
 	public float getBaseDamage()
 	{
 		return baseDamage;
-	}
-	
-	public boolean isActive()
-	{
-		return active;
 	}
 	
 	public float getAngle()
@@ -113,9 +115,9 @@ private PApplet app;
 		baseDamage = newDamage;
 	}
 	
-	public void setActive(boolean someBool)
+	public void setActive(boolean active)
 	{
-		active = someBool;
+		this.active = active;
 	}
 	
 	public void setAngle(float newAngle)
@@ -126,10 +128,9 @@ private PApplet app;
 	@Override
 	public void draw() 
 	{
+		app.println("start fire draw");
 		float temp = app.random(255);
 		timer++;
-		if(timer > 50)
-			active = false;
 		app.pushMatrix();
 		app.pushStyle();
 		app.translate(x, y);					// translate the reference point to the projectile coordinates
@@ -143,14 +144,56 @@ private PApplet app;
 		
 		app.popStyle();
 		app.popMatrix();
+		app.println("End fire draw");
 	}
 
 	@Override
 	public void animate() 
 	{
+		if(timer > 50)
+			active = false;
 		x += dx;
 		y += dy;
 		collisionBox.setX(x);
 		collisionBox.setY(y);
+	}
+
+	/**
+	 * @return the particleMode
+	 */
+	public Mode getParticleMode() {
+		return particleMode;
+	}
+
+	/**
+	 * @param particleMode the particleMode to set
+	 */
+	public void setParticleMode(Mode particleMode) {
+		this.particleMode = particleMode;
+	}
+
+	@Override
+	public int getTimer() 
+	{
+		return timer;
+	}
+
+	@Override
+	public void setTimer(int timer) 
+	{
+		this.timer = timer;
+	}
+
+	@Override
+	public boolean isAnimation() 
+	{
+		return animation;
+	}
+
+	@Override
+	public void setAnimation(boolean animation) 
+	{
+		if(animation == true)
+			active = false;
 	}
 }

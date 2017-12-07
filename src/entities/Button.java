@@ -120,6 +120,7 @@ public class Button implements ApplicationConstants
 	 */
 	public void draw(PFont FLOAT_FONT)
 	{
+		float BORDER_WIDTH = app.width/160;
 		app.pushStyle();
 		app.textAlign(PConstants.CENTER);
 		app.rectMode(PConstants.CORNER);

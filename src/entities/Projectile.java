@@ -1,5 +1,7 @@
 package entities;
 
+import main.Mode;
+
 /**
  * The abstract Projectile class acts as a base class for different projectile specializations.
  * All comments for methods in child classes are located in this class, with the exception of 
@@ -14,13 +16,16 @@ package entities;
 
 public abstract class Projectile 
 {
+	float timer;
 	float velocity;
 	float x;
 	float y;
 	float baseDamage;
 	boolean active;
+	boolean animation;
 	float angle;
 	Box collisionBox;
+	Mode projectileMode;
 	
 	/**
 	 * Method to return the projectiles velocity
@@ -82,11 +87,13 @@ public abstract class Projectile
 	public void setX(float newX)
 	{
 		x = newX;
+		collisionBox.setX(newX);
 	}
 	
 	public void setY(float newY)
 	{
 		y = newY;
+		collisionBox.setY(newY);
 	}
 	
 	public void setBaseDamage(int newDamage)
@@ -108,4 +115,28 @@ public abstract class Projectile
 		angle = newAngle;
 	}
 
+	/**
+	 * @return the projectileMode
+	 */
+	public Mode getProjectileMode() 
+	{
+		return projectileMode;
+	}
+
+	/**
+	 * @param projectileMode the projectileMode to set
+	 */
+	public void setProjectileMode(Mode projectileMode) 
+	{
+		this.projectileMode = projectileMode;
+	}
+	
+	public abstract int getTimer();
+	
+	public abstract void setTimer(int timer);
+	
+	public abstract boolean isAnimation();
+	
+	public abstract void setAnimation(boolean animation);
+	
 }

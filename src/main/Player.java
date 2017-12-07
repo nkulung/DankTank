@@ -12,7 +12,9 @@ public class Player extends Tank implements ApplicationConstants
 {
 	private PApplet app;
 	
+	private float maxHealth;
 	private float health;
+	private int range;
 	private float x;
 	private float y;
 	
@@ -22,7 +24,6 @@ public class Player extends Tank implements ApplicationConstants
 	private float velocity;
 	private float size;
 	private float angle;
-	private float[] location = new float[2];
 	
 	private Box collisionBox;
 	
@@ -47,14 +48,13 @@ public class Player extends Tank implements ApplicationConstants
 	public Player(PApplet theApp, float someX, float someY)
 	{
 		app = theApp;
+		maxHealth = 100;
 		health = 100;
 		currency = 500;
 		x = someX;
 		y = someY;
-		velocity = 50;
+		velocity = 20;
 		up = true;
-		location[0] = (x/100);
-		location[1] = (y/100);
 		tankColor = new Color(163, 162, 63);
 		size = TANK_SIZE;
 		standardRounds = 10;
@@ -68,12 +68,49 @@ public class Player extends Tank implements ApplicationConstants
 	}
 	
 	/**
+	 * Constructor used when loading a saved player file
+	 */
+	public Player(PApplet app, float maxHealth, float health, int range, float velocity,
+					int red, int green, int blue, int currency,
+					int standardRounds, int fireRounds, int explosiveRounds, int scatterRounds)
+	{
+		this.app = app;
+		this.x = PLAYER_SPAWN_X;
+		this.y = PLAYER_SPAWN_Y;
+		this.maxHealth = maxHealth;
+		this.health = health;
+		this.range = range;
+		this.velocity = velocity;
+		this.size = TANK_SIZE;
+		this.angle = 0;
+		this.tankColor = new Color(red, green, blue);
+		this.up = true;
+		this.currency = currency;
+		this.standardRounds = standardRounds;
+		this.fireRounds = fireRounds;
+		this.explosiveRounds = explosiveRounds;
+		this.scatterRounds = scatterRounds;
+		activeRounds = new ArrayList<Projectile>();
+		collisionBox = new Box(this.app, x + xOffset, y + yOffset, size + xOffset*2, size + yOffset*2, new Color(255, 0, 0, 102));
+		setSelectedRound(Mode.STANDARD);
+	}
+	
+	
+	/**
 	 * Method to return the players currency
 	 * @return
 	 */
 	public int getCurrency()
 	{
 		return currency;
+	}
+	
+	/**
+	 * Method to return the players range
+	 */
+	public int getRange()
+	{
+		return range;
 	}
 	
 	/**
@@ -153,9 +190,15 @@ public class Player extends Tank implements ApplicationConstants
 		{
 			if(standardRounds > 0)
 			{
-				activeRounds.add(new StandardProjectile(app, x, y, angle));
+				activeRounds.add(new StandardProjectile(app, x, y, angle, range));
 				standardRounds -= 1;
 			}
+			else if(explosiveRounds > 0)
+				selectedRound = Mode.EXPLOSIVE;
+			else if(fireRounds > 0)
+				selectedRound = Mode.FIRE;
+			else if(scatterRounds > 0)
+				selectedRound = Mode.SCATTER;
 		}
 		else if(selectedRound == Mode.EXPLOSIVE)
 		{
@@ -164,6 +207,12 @@ public class Player extends Tank implements ApplicationConstants
 				activeRounds.add(new ExplosiveProjectile(app, x, y, angle));
 				explosiveRounds -= 1;
 			}
+			else if(standardRounds > 0)
+				selectedRound = Mode.STANDARD;
+			else if(fireRounds > 0)
+				selectedRound = Mode.FIRE;
+			else if(scatterRounds > 0)
+				selectedRound = Mode.SCATTER;
 		}
 		else if(selectedRound == Mode.FIRE)
 		{
@@ -172,6 +221,12 @@ public class Player extends Tank implements ApplicationConstants
 				activeRounds.add(new FireProjectile(app, x, y, angle));
 				fireRounds -= 1;
 			}
+			else if(standardRounds > 0)
+				selectedRound = Mode.STANDARD;
+			else if(explosiveRounds > 0)
+				selectedRound = Mode.EXPLOSIVE;
+			else if(scatterRounds > 0)
+				selectedRound = Mode.SCATTER;
 		}
 		else if(selectedRound == Mode.SCATTER)
 		{
@@ -179,10 +234,16 @@ public class Player extends Tank implements ApplicationConstants
 			{
 				for(int i = 0; i < 5; i++)
 				{
-					activeRounds.add(new StandardProjectile(app, x, y, angle + (app.random(-30, 30))));
+					activeRounds.add(new StandardProjectile(app, x, y, angle + (app.random(-30, 30)), range));
 				}
 				scatterRounds -= 1;
 			}
+			else if(standardRounds > 0)
+				selectedRound = Mode.STANDARD;
+			else if(explosiveRounds > 0)
+				selectedRound = Mode.EXPLOSIVE;
+			else if(fireRounds > 0)
+				selectedRound = Mode.FIRE;
 		}
 	}
 	
@@ -350,6 +411,10 @@ public class Player extends Tank implements ApplicationConstants
 		app.popMatrix();
 	}
 	
+	public float getMaxHealth()
+	{
+		return maxHealth;
+	}
 	
 	public float getHealth()
 	{
@@ -369,11 +434,6 @@ public class Player extends Tank implements ApplicationConstants
 	public float getY()
 	{
 		return y;
-	}
-	
-	public float[] getLocation()
-	{
-		return location;
 	}
 	
 	public float getSize()
@@ -396,6 +456,11 @@ public class Player extends Tank implements ApplicationConstants
 		return friendly;
 	}
 	
+	public void setMaxHealth(float newMaxHealth)
+	{
+		maxHealth = newMaxHealth;
+	}
+	
 	public void setHealth(float newHealth)
 	{
 		health = newHealth;
@@ -411,11 +476,6 @@ public class Player extends Tank implements ApplicationConstants
 	{
 		y = newY;
 		collisionBox.setY(newY + yOffset);
-	}
-	
-	public void setLocation(float[] newLocation)
-	{
-		location = newLocation;
 	}
 
 	public void setColor(Color newColor)
@@ -466,6 +526,11 @@ public class Player extends Tank implements ApplicationConstants
 	public void setSelectedRound(Mode selectedRound) 
 	{
 		this.selectedRound = selectedRound;
+	}
+	
+	public void setRange(int range)
+	{
+		this.range = range;
 	}
 
 }

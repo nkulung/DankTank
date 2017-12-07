@@ -15,6 +15,8 @@ public class Tile implements ApplicationConstants
 	
 	private float x;
 	private float y;
+	private float worldX;
+	private float worldY;
 	private float length;
 	private Box collisionBox;
 	
@@ -29,11 +31,23 @@ public class Tile implements ApplicationConstants
 		app = theApp;
 		x = tileX;
 		y = tileY;
+		worldX = x;
+		worldY = y;
 		length = tileLength;
 		tileColor = new Color(255, 255, 255);
 		collisionBox = new Box(theApp, x, y, length, length, new Color(0, 0, 255, 102));
 		renderTile = false;
 		type = TileType.NULL_TILE;
+	}
+	
+	public float getWorldX()
+	{
+		return worldX;
+	}
+	
+	public float getWorldY()
+	{
+		return worldY;
 	}
 
 	public float getX() 

@@ -18,6 +18,14 @@ public class World implements ApplicationConstants
 {
 	PApplet app;
 	
+	float WIN_WIDTH;
+	float WIN_HEIGHT;
+	float RENDER_ORIGIN_X;
+	float RENDER_ORIGIN_Y;
+	float RENDER_WIDTH;
+	float RENDER_HEIGHT;
+	float UI_WIDTH;
+	
 	Tile[][] tileCollection;
 	
 	private int playerX;
@@ -28,13 +36,23 @@ public class World implements ApplicationConstants
 	/**
 	 * Constructor for world class
 	 */
-	public World(PApplet theApp, float[] playerCoordinate)
+	public World(PApplet theApp, int playerX, int playerY)
 	{
 		app = theApp;
+		
+		WIN_WIDTH = app.width;
+		WIN_HEIGHT = app.height;
+		
+		UI_WIDTH = WIN_WIDTH/4;
+		RENDER_ORIGIN_X = (WIN_WIDTH - UI_WIDTH)/2;
+		RENDER_ORIGIN_Y = WIN_HEIGHT/2;
+		RENDER_WIDTH = WIN_WIDTH - UI_WIDTH;
+		RENDER_HEIGHT = WIN_HEIGHT;
+		
 		tileCollection = new Tile[WORLD_DIMENSION][WORLD_DIMENSION];
 		renderBox = new Box(theApp, RENDER_ORIGIN_X, RENDER_ORIGIN_Y, RENDER_WIDTH, RENDER_HEIGHT, new Color(0, 255, 0, 102));
-		playerX = (int) playerCoordinate[0];
-		playerY = (int) playerCoordinate[1];
+		this.playerX = playerX;
+		this.playerY = playerY;
 		initialize();
 	}
 	

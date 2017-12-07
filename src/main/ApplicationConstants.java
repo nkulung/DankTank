@@ -4,30 +4,24 @@ import java.awt.Color;
 
 public interface ApplicationConstants 
 {
-	float WIN_WIDTH = 3200;
-	float WIN_HEIGHT = 1800;
-	
-	float SCREEN_EDGE_TOP = WIN_HEIGHT/4;
-	float SCREEN_EDGE_BOTTOM = 3 * (WIN_HEIGHT/4);
-	float SCREEN_EDGE_LEFT = WIN_WIDTH/4;
-	float SCREEN_EDGE_RIGHT = WIN_WIDTH/2;
-	
-	// User Interface variables
-	float UI_WIDTH = WIN_WIDTH/4;
-	float MENU_WALL = WIN_WIDTH - UI_WIDTH;
-	float BORDER_WIDTH = WIN_WIDTH/160;
-	
+
 	int WORLD_DIMENSION = 50;
 	float TILE_SIZE = 100;
 	
-		
-	
-	float RENDER_ORIGIN_X = (WIN_WIDTH - UI_WIDTH)/2;
-	float RENDER_ORIGIN_Y = WIN_HEIGHT/2;
-	float RENDER_WIDTH = WIN_WIDTH - UI_WIDTH;
-	float RENDER_HEIGHT = WIN_HEIGHT;
-	
 	float TANK_SIZE = 120;
+	float AMMO_CAPACITY = 50;
+	
+	int STANDARD_AMMO_PRICE = 5;
+	int EXPLOSIVE_AMMO_PRICE = 20;
+	int FIRE_AMMO_PRICE = 10;
+	int SCATTER_AMMO_PRICE = 20;
+	int HEALTH_PACK_PRICE = 15;
+	int SPEED_BOOST_PRICE = 500;
+	
+	int MAX_SPEED = 50;
+	
+	float PLAYER_SPAWN_X = 400;
+	float PLAYER_SPAWN_Y = 500;
 
 	float BUTTON_WIDTH = 250;						// default button width
 	float BUTTON_HEIGHT = 80;						// default button height

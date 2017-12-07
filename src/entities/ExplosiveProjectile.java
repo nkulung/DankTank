@@ -2,6 +2,7 @@ package entities;
 
 import java.awt.Color;
 
+import main.Mode;
 import processing.core.PApplet;
 
 public class ExplosiveProjectile extends Projectile
@@ -16,14 +17,16 @@ public class ExplosiveProjectile extends Projectile
 	private float dy;
 	private float baseDamage;
 	private boolean active;
-	private boolean explode;
+	private boolean animation;
 	private float angle;
 	private float diameter;
 	
-	private float timer;
+	private int timer;
 	private float explosionTimer;
 	
 	private Box collisionBox;
+	
+	private Mode projectileMode;
 	
 	public ExplosiveProjectile(PApplet theApp, float userX, float userY, float someAngle)
 	{
@@ -36,11 +39,12 @@ public class ExplosiveProjectile extends Projectile
 		angle = -someAngle;
 		dx = (float)(velocity * Math.cos(PApplet.radians(angle)));
 		dy = (float)(velocity * Math.sin(PApplet.radians(angle)));
-		baseDamage = 20;
+		baseDamage = 5;
 		diameter = 30;
 		active = true;
-		explode = false;
+		animation = false;
 		collisionBox = new Box(theApp, x, y, diameter + 5, diameter + 5, new Color(255, 0, 0, 102));
+		projectileMode = Mode.EXPLOSIVE;
 	}
 	
 	/**
@@ -125,15 +129,27 @@ public class ExplosiveProjectile extends Projectile
 		angle = newAngle;
 	}
 	
+	
+	/**
+	 * @return the projectileMode
+	 */
+	public Mode getProjectileMode() 
+	{
+		return projectileMode;
+	}
+
+	/**
+	 * @param projectileMode the projectileMode to set
+	 */
+	public void setProjectileMode(Mode projectileMode) 
+	{
+		this.projectileMode = projectileMode;
+	}
+
 	@Override
 	public void draw() 
 	{
 		timer++;
-		if(timer > 50)
-		{
-			explode = true;
-			app.noStroke();
-		}
 		app.pushMatrix();
 		app.pushStyle();
 		app.translate(x, y);					// translate the reference point to the projectile coordinates
@@ -149,12 +165,16 @@ public class ExplosiveProjectile extends Projectile
 	@Override
 	public void animate() 
 	{
-		if(explode)
+		if(timer > 50)
+			animation = true;
+		
+		if(animation)
 		{
 			if(explosionTimer > 50)
 				active = false;
 			diameter += 20;
 			explosionTimer += 5;
+			collisionBox = new Box(app, x, y, diameter + 5, diameter + 5, new Color(255, 0, 0, 102));
 		}
 		else
 		{
@@ -163,6 +183,30 @@ public class ExplosiveProjectile extends Projectile
 			collisionBox.setX(x);
 			collisionBox.setY(y);
 		}
+	}
+
+	@Override
+	public int getTimer() 
+	{
+		return timer;
+	}
+
+	@Override
+	public void setTimer(int timer) 
+	{
+		this.timer = timer;	
+	}
+
+	@Override
+	public boolean isAnimation() 
+	{
+		return animation;
+	}
+
+	@Override
+	public void setAnimation(boolean animation) 
+	{
+		this.animation = animation;
 	}
 
 }

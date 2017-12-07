@@ -9,6 +9,24 @@ public class Shop implements ApplicationConstants
 {
 	private PApplet app;
 	
+	float WIN_WIDTH;
+	float WIN_HEIGHT;
+	
+	float SCREEN_EDGE_TOP;
+	float SCREEN_EDGE_BOTTOM;
+	float SCREEN_EDGE_LEFT;
+	float SCREEN_EDGE_RIGHT;
+	
+	// User Interface variables
+	float UI_WIDTH;
+	float MENU_WALL;
+	float BORDER_WIDTH;
+	
+	float RENDER_ORIGIN_X;
+	float RENDER_ORIGIN_Y;
+	float RENDER_WIDTH;
+	float RENDER_HEIGHT;
+	
 	private float width;
 	private float height;
 	
@@ -32,15 +50,29 @@ public class Shop implements ApplicationConstants
 	private Button fireAmmoButton;
 	private Button explosiveAmmoButton;
 	private Button scatterAmmoButton;
-	
-	private int standardAmmoPrice;
-	private int burnAmmoPrice;
-	private int explosiveAmmoPrice;
-	private int scatterAmmoPrice;
+	private Button healthPackButton;
+	private Button speedBoostButton;
 	
 	public Shop(PApplet theApp)
 	{
 		app = theApp;
+		WIN_WIDTH = app.width;
+		WIN_HEIGHT = app.height;
+		
+		SCREEN_EDGE_TOP = WIN_HEIGHT/4;
+		SCREEN_EDGE_BOTTOM = 3 * (WIN_HEIGHT/4);
+		SCREEN_EDGE_LEFT = WIN_WIDTH/4;
+		SCREEN_EDGE_RIGHT = WIN_WIDTH/2;
+		
+		// User Interface variables
+		UI_WIDTH = WIN_WIDTH/4;
+		MENU_WALL = WIN_WIDTH - UI_WIDTH;
+		BORDER_WIDTH = WIN_WIDTH/160;
+		
+		RENDER_ORIGIN_X = (WIN_WIDTH - UI_WIDTH)/2;
+		RENDER_ORIGIN_Y = WIN_HEIGHT/2;
+		RENDER_WIDTH = WIN_WIDTH - UI_WIDTH;
+		RENDER_HEIGHT = WIN_HEIGHT;
 		width = SCREEN_EDGE_RIGHT;
 		height = SCREEN_EDGE_BOTTOM;
 		
@@ -49,11 +81,6 @@ public class Shop implements ApplicationConstants
 		burnAmmoIcon = app.loadImage("burn.png");
 		explosiveAmmoIcon = app.loadImage("explosiveShot.png");
 		scatterAmmoIcon = app.loadImage("scatterShot.png");
-		
-		standardAmmoPrice = 0;
-		burnAmmoPrice = 5;
-		explosiveAmmoPrice = 10;
-		scatterAmmoPrice = 10;
 		
 		
 		scaleFrame();
@@ -82,7 +109,6 @@ public class Shop implements ApplicationConstants
 		app.rect(column2, row1 - unitHeight/8, unitWidth*7/8, unitHeight*5/8, 20);
 		app.rect(column3, row1 - unitHeight/8, unitWidth*7/8, unitHeight*5/8, 20);
 		app.rect(column1, row2 - unitHeight/8, unitWidth*7/8, unitHeight*5/8, 20);
-		app.rect(column2, row2 - unitHeight/8, unitWidth*7/8, unitHeight*5/8, 20);
 		app.rect(column3, row2 - unitHeight/8, unitWidth*7/8, unitHeight*5/8, 20);
 		
 		float imageSize = 150;
@@ -94,12 +120,22 @@ public class Shop implements ApplicationConstants
 		imageSize = 50;
 		app.image(currencyIcon, column1 - unitWidth*5/12, row1 + unitHeight/16, imageSize, imageSize);
 		
+		app.fill(255);
+		app.rect(column2, row2 - unitHeight/8, unitWidth*7/8, unitHeight*5/8, 20);
+		app.rectMode(app.CENTER);
+		app.fill(255, 0, 0);
+		app.noStroke();
+		app.rect(column2, row2 - unitHeight/7, unitWidth/1.6f, unitHeight/6);
+		app.rect(column2, row2 - unitHeight/7, unitHeight/6, unitWidth/1.6f);
+		
 		
 		
 		standardAmmoButton.draw(FLOAT_FONT);
 		fireAmmoButton.draw(FLOAT_FONT);
 		explosiveAmmoButton.draw(FLOAT_FONT);
 		scatterAmmoButton.draw(FLOAT_FONT);
+		healthPackButton.draw(FLOAT_FONT);
+		speedBoostButton.draw(FLOAT_FONT);
 		
 		
 		
@@ -128,6 +164,8 @@ public class Shop implements ApplicationConstants
 		fireAmmoButton = new Button(app, "Buy", column2 - unitWidth/3, row1 + unitHeight/5);
 		explosiveAmmoButton = new Button(app, "Buy", column3 - unitWidth/3, row1 + unitHeight/5);
 		scatterAmmoButton = new Button(app, "Buy", column1 - unitWidth/3, row2 + unitHeight/5);
+		healthPackButton = new Button(app, "Buy", column2 - unitWidth/3, row2 + unitHeight/5);
+		speedBoostButton = new Button(app, "Buy", column3 - unitWidth/3, row2 + unitHeight/5);
 	}
 	
 	public boolean isInside(float pointX, float pointY)
@@ -153,6 +191,16 @@ public class Shop implements ApplicationConstants
 	public Button getScatterAmmoButton()
 	{
 		return scatterAmmoButton;
+	}
+	
+	public Button getHealthPackButton()
+	{
+		return healthPackButton;
+	}
+	
+	public Button getSpeedBoostButton()
+	{
+		return speedBoostButton;
 	}
 
 }
