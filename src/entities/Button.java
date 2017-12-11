@@ -141,7 +141,7 @@ public class Button implements ApplicationConstants
 		}
 		else
 		{
-			app.image(buttonImage, x - 20, y - 20);
+			app.image(buttonImage, x - 20, y - 20, BUTTON_WIDTH, BUTTON_HEIGHT);
 			app.fill(255);
 			app.text(label, x + (BUTTON_WIDTH/2), y + BUTTON_HEIGHT);
 		}

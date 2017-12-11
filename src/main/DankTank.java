@@ -16,7 +16,6 @@ import javax.swing.JOptionPane;
 import entities.Button;
 import entities.Enemy;
 import entities.Projectile;
-import peasy.PeasyCam;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
